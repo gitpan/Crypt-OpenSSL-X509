@@ -69,6 +69,7 @@ static SV* sv_bio_final(BIO *bio) {
 	return sv;
 }
 
+/*
 static void sv_bio_error(BIO *bio) {
 
 	SV* sv = (SV *)BIO_get_callback_arg(bio);
@@ -76,6 +77,7 @@ static void sv_bio_error(BIO *bio) {
 
 	BIO_free_all (bio);
 }
+*/
 
 static const char *ssl_error(void) {
 	BIO *bio;
@@ -123,7 +125,7 @@ BOOT:
 	char *name;
 	int i;
 
-	for (i = 0; name = Crypt__OpenSSL__X509__const[i].n; i++) {
+	for (i = 0; (name = Crypt__OpenSSL__X509__const[i].n); i++) {
 		newCONSTSUB(stash, name, newSViv(Crypt__OpenSSL__X509__const[i].v));
 	}
 }
@@ -140,7 +142,7 @@ new(class)
 
         if (!X509_set_version(RETVAL, 2)) {
 		X509_free(RETVAL);
-		croak ("X509_set_version");
+		croak ("%s - can't X509_set_version()", class);
 	}
 
 	ASN1_INTEGER_set(X509_get_serialNumber(RETVAL), 0L);
@@ -172,17 +174,19 @@ new_from_string(class, string, format = FORMAT_PEM)
 		bio = BIO_new_mem_buf(cert, len);
 	}
 
-	if (!bio) croak("Failed to create BIO");
+	if (!bio) croak("%s: Failed to create BIO", class);
 
 	/* this can come in any number of ways */
 	if (format == FORMAT_ASN1) {
 
                 RETVAL = (X509*)d2i_X509_bio(bio, NULL);
 
-        } else if (format == FORMAT_PEM) {
+        } else {
 
         	RETVAL = (X509*)PEM_read_bio_X509(bio, NULL, NULL, NULL);
         }
+
+	if (!RETVAL) croak("%s: failed to read X509 certificate.", class);
 
         BIO_free(bio);
 
@@ -354,8 +358,9 @@ fingerprint_md5(x509)
 		croak("Digest error: %s", ssl_error());
 	}
 
-	for (i = 0; i < n; i++) {
-		BIO_printf(bio, "%02X%c", md[i], (i + 1 == (int) n) ? '\0' : ':');
+	BIO_printf(bio, "%02X", md[0]);
+	for (i = 1; i < n; i++) {
+		BIO_printf(bio, ":%02X", md[i]);
 	}
 
 	RETVAL = sv_bio_final(bio);

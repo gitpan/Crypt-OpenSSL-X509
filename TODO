@@ -5,5 +5,3 @@ Better error handling.
 Setter methods.
 
 Private key handling.
-
-Strip nulls in XS.

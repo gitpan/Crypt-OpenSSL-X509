@@ -9,6 +9,6 @@ WriteMakefile(
 	(ABSTRACT_FROM => 'X509.pm',
 	AUTHOR     => 'Dan Sully <daniel@cpan.org>') : ()),
 	'LIBS'		=> ['-lcrypto'],
-	'DEFINE'	=> '-DPERL5',
+	'DEFINE'	=> '-DPERL5 -Wall',
 	'INC'		=> '',
 );
