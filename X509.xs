@@ -9,6 +9,7 @@
 #include <openssl/evp.h>
 #include <openssl/pem.h>
 #include <openssl/x509.h>
+#include <openssl/x509v3.h>
 
 /* from openssl/apps/apps.h */
 #define FORMAT_UNDEF    0
@@ -212,6 +213,7 @@ accessor(x509)
 	hash    = 4
 	notBefore = 5
 	notAfter  = 6
+	email     = 7
 
 	PREINIT:
 	BIO *bio;
@@ -239,7 +241,7 @@ accessor(x509)
 
 	} else if (ix == 4) {
 
-		BIO_printf(bio, "%08lx\n", X509_subject_name_hash(x509));
+		BIO_printf(bio, "%08lx", X509_subject_name_hash(x509));
 
 	} else if (ix == 5) {
 
@@ -248,6 +250,17 @@ accessor(x509)
 	} else if (ix == 6) {
 
                 ASN1_TIME_print(bio, X509_get_notAfter(x509));
+
+	} else if (ix == 7) {
+
+		int j;
+		STACK *emlst = X509_get1_email(x509);
+
+		for (j = 0; j < sk_num(emlst); j++) {
+			BIO_printf(bio, "%s", sk_value(emlst, j));
+		}
+
+		X509_email_free(emlst);
 	}
 
 	RETVAL = sv_bio_final(bio);

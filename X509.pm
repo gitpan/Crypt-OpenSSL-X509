@@ -5,7 +5,7 @@ use vars qw($VERSION @EXPORT_OK);
 use Exporter;
 use base qw(Exporter);
 
-$VERSION = '0.3';
+$VERSION = '0.3.1';
 
 @EXPORT_OK = qw(
 	FORMAT_UNDEF FORMAT_ASN1 FORMAT_TEXT FORMAT_PEM FORMAT_NETSCAPE
@@ -39,6 +39,10 @@ Crypt::OpenSSL::X509 - Perl extension to OpenSSL's X509 API.
   print $x509->pubkey() . "\n";
   print $x509->subject() . "\n";
   print $x509->issuer() . "\n";
+  print $x509->email() . "\n";
+  print $x509->hash() . "\n";
+  print $x509->notBefore() . "\n";
+  print $x509->notAfter() . "\n";
 
 =head1 ABSTRACT
 
@@ -47,6 +51,12 @@ Crypt::OpenSSL::X509 - Perl extension to OpenSSL's X509 API.
 =head1 DESCRIPTION
 
   This implement a large majority of OpenSSL's useful X509 API.
+
+  The email() method supports both certificates where the
+  subject is of the form: 
+  "... CN=Firstname lastname/emailAddress=user@domain", and also 
+  certificates where there is a X509v3 Extension of the form 
+  "X509v3 Subject Alternative Name: email=user@domain".
 
 =head2 EXPORT
 

@@ -1,5 +1,11 @@
 Revision history for Perl extension Crypt::OpenSSL::X509.
 
+0.3.1  Mon Nov 22 23:20:43 PST 2004
+
+	- Patch from Daniel Risacher to add an email() method & doc additions.
+
+	- Remove newline from hash() accessor.
+
 0.3   Mon Oct  4 12:38:34 PDT 2004
 
 	- Patch from Otmar Lendl to remove NULL on fingerprint.
