@@ -9,3 +9,9 @@ Revision history for Perl extension Crypt::OpenSSL::X509.
 	- Initial release.
 
 	- Interoperates with Crypt::OpenSSL::Bignum & Crypt::OpenSSL::RSA
+
+0.2   Fri Jan 30 11:36:36 PST 2004
+
+	- Handle ASN1/DER input.
+	
+	- Additional headers and cleanup.

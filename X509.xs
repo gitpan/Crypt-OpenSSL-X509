@@ -2,6 +2,12 @@
 #include "perl.h"
 #include "XSUB.h"
 
+#include <openssl/asn1.h>
+#include <openssl/bio.h>
+#include <openssl/crypto.h>
+#include <openssl/err.h>
+#include <openssl/evp.h>
+#include <openssl/pem.h>
 #include <openssl/x509.h>
 
 /* from openssl/apps/apps.h */
@@ -93,14 +99,9 @@ BOOT:
         OpenSSL_add_all_ciphers();
         OpenSSL_add_all_digests();
 	ERR_load_PEM_strings();
-        ERR_load_PKCS7_strings();
-        ERR_load_PKCS12_strings();
         ERR_load_ASN1_strings();
         ERR_load_crypto_strings();
-        ERR_load_RAND_strings();
         ERR_load_X509_strings();
-        ERR_load_X509V3_strings();
-        ERR_load_DH_strings();
         ERR_load_DSA_strings();
         ERR_load_RSA_strings();
 
@@ -121,6 +122,7 @@ BOOT:
 
 	char *name;
 	int i;
+
 	for (i = 0; name = Crypt__OpenSSL__X509__const[i].n; i++) {
 		newCONSTSUB(stash, name, newSViv(Crypt__OpenSSL__X509__const[i].v));
 	}
@@ -147,9 +149,10 @@ new(class)
         RETVAL
 
 Crypt::OpenSSL::X509
-new_from_string(class,string)
+new_from_string(class, string, format = FORMAT_PEM)
 	SV	*class
         SV	*string
+        int	format
 
 	ALIAS:
    	new_from_file = 1     
@@ -157,25 +160,31 @@ new_from_string(class,string)
 	PREINIT:
 	BIO *bio;
 	STRLEN len;
-	char *data;
+	char *cert;
 
 	CODE:
 
-	data = SvPV(string, len);
+	cert = SvPV(string, len);
 
         if (ix == 1) {
-		bio = BIO_new_file(data, "r");
+		bio = BIO_new_file(cert, "r");
         } else {
-		bio = BIO_new_mem_buf(data, len);
+		bio = BIO_new_mem_buf(cert, len);
 	}
 
 	if (!bio) croak("Failed to create BIO");
 
-        RETVAL = (X509*)PEM_read_bio_X509(bio, NULL, NULL, NULL);
+	/* this can come in any number of ways */
+	if (format == FORMAT_ASN1) {
+
+                RETVAL = (X509*)d2i_X509_bio(bio, NULL);
+
+        } else if (format == FORMAT_PEM) {
+
+        	RETVAL = (X509*)PEM_read_bio_X509(bio, NULL, NULL, NULL);
+        }
 
         BIO_free(bio);
-
-	if (!RETVAL) croak("PEM_read_bio_X509 failed.");
 
 	OUTPUT:
 	RETVAL
@@ -184,12 +193,9 @@ void
 DESTROY(x509)
 	Crypt::OpenSSL::X509 x509;
 
-	CODE:
+	PPCODE:
 
-	if (x509) {
-		X509_free(x509);
-		x509 = 0;
-	}
+	if (x509) X509_free(x509); x509 = 0;
 
 SV*
 accessor(x509)
@@ -371,10 +377,13 @@ checkend(x509, checkoffset)
 
 	/* given an offset in seconds, will the certificate be expired? */
 	if (ASN1_UTCTIME_cmp_time_t(X509_get_notAfter(x509), now + (int)checkoffset) == -1) {
-		XSRETURN_YES;
+		RETVAL = (IV)&PL_sv_yes;
 	} else {
-		XSRETURN_NO;
+		RETVAL = (IV)&PL_sv_no;
 	}
+
+	OUTPUT:
+	RETVAL
 
 SV*
 pubkey(x509)
