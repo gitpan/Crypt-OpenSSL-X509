@@ -1,7 +1,7 @@
 abstract: Perl extension to OpenSSL's X509 API.
 author: 'Dan Sully, <daniel@cpan.org>'
 distribution_type: module
-generated_by: Module::Install version 0.63
+generated_by: Module::Install version 0.64
 license: perl
 name: Crypt-OpenSSL-X509
 no_index:
@@ -10,4 +10,4 @@ no_index:
     - t
 requires:
   perl: 5.005
-version: 0.4
+version: 0.4.1
