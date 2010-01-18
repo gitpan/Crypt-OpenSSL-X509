@@ -1,17 +1,24 @@
---- 
-abstract: Perl extension to OpenSSL's X509 API.
-author: Dan Sully, <daniel@cpan.org>
+---
+abstract: "Perl extension to OpenSSL's X509 API."
+author:
+  - 'Dan Sully, <daniel@cpan.org>'
+build_requires:
+  ExtUtils::MakeMaker: 6.42
+configure_requires:
+  ExtUtils::MakeMaker: 6.42
 distribution_type: module
-generated_by: Module::Install version 0.67
+generated_by: 'Module::Install version 0.91'
 license: perl
-meta-spec: 
-  url: http://module-build.sourceforge.net/META-spec-v1.3.html
-  version: 1.3
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
 name: Crypt-OpenSSL-X509
-no_index: 
-  directory: 
+no_index:
+  directory:
     - inc
     - t
-requires: 
+requires:
   perl: 5.005
-version: 0.7
+resources:
+  license: http://dev.perl.org/licenses/
+version: 0.9
