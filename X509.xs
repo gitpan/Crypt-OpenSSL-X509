@@ -71,6 +71,8 @@ static SV* sv_bio_final(BIO *bio) {
 
   (void)BIO_flush(bio);
   sv = (SV *)BIO_get_callback_arg(bio);
+  BIO_set_callback_arg(bio, (void *)NULL);
+  BIO_set_callback(bio, (void *)NULL);
   BIO_free_all(bio);
 
   return sv;
@@ -199,17 +201,6 @@ PROTOTYPES: DISABLE
 
 BOOT:
 {
-  OpenSSL_add_all_algorithms();
-  OpenSSL_add_all_ciphers();
-  OpenSSL_add_all_digests();
-  ERR_load_PEM_strings();
-  ERR_load_ASN1_strings();
-  ERR_load_crypto_strings();
-  ERR_load_X509_strings();
-  ERR_load_DSA_strings();
-  ERR_load_RSA_strings();
-  ERR_load_OBJ_strings();
-
   HV *stash = gv_stashpvn("Crypt::OpenSSL::X509", 20, TRUE);
 
   struct { char *n; I32 v; } Crypt__OpenSSL__X509__const[] = {
@@ -259,7 +250,7 @@ new(class)
 Crypt::OpenSSL::X509
 new_from_string(class, string, format = FORMAT_PEM)
   SV  *class
-  SV  *string
+  char *string
   int  format
 
   ALIAS:
@@ -267,17 +258,13 @@ new_from_string(class, string, format = FORMAT_PEM)
 
   PREINIT:
   BIO *bio;
-  STRLEN len;
-  char *cert;
 
   CODE:
 
-  cert = SvPV(string, len);
-
   if (ix == 1) {
-    bio = BIO_new_file(cert, "r");
+    bio = BIO_new_file(string, "r");
   } else {
-    bio = BIO_new_mem_buf(cert, len);
+    bio = BIO_new_mem_buf(string, strlen(string));
   }
 
   if (!bio) croak("%s: Failed to create BIO", SvPV_nolen(class));
@@ -292,9 +279,9 @@ new_from_string(class, string, format = FORMAT_PEM)
     RETVAL = (X509*)PEM_read_bio_X509(bio, NULL, NULL, NULL);
   }
 
-  if (!RETVAL) croak("%s: failed to read X509 certificate.", SvPV_nolen(class));
+  BIO_free_all(bio);
 
-  BIO_free(bio);
+  if (!RETVAL) croak("%s: failed to read X509 certificate.", SvPV_nolen(class));
 
   OUTPUT:
   RETVAL
