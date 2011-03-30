@@ -5,7 +5,7 @@ use vars qw($VERSION @EXPORT_OK);
 use Exporter;
 use base qw(Exporter);
 
-$VERSION = '1.6';
+$VERSION = '1.7';
 
 @EXPORT_OK = qw(
   FORMAT_UNDEF FORMAT_ASN1 FORMAT_TEXT FORMAT_PEM FORMAT_NETSCAPE
@@ -82,6 +82,11 @@ sub Crypt::OpenSSL::X509::Extension::extKeyUsage {
   return @vals;
 }
 
+sub Crypt::OpenSSL::X509::is_selfsigned {
+  my $x509 = shift;
+
+  return $x509->subject eq $x509->issuer;
+}
 
 BOOT_XS: {
   require DynaLoader;
@@ -235,6 +240,10 @@ Signature algorithm name as a string.
 =item issuer_name ( )
 
 Return a Name object for the subject or issuer name. Methods for handling Name objects are given below.
+
+=item is_selfsigned ( )
+
+Return Boolean value if subject and issuer name are the same.
 
 =item as_string ( [ FORMAT ] )
 
